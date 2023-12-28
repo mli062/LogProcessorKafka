@@ -1,6 +1,6 @@
 import os
 import unittest
-from log_processor_kafka.ip_generator.GeoIPGenerator import GeoIPGenerator
+from log_processor_kafka.generator.GeoIPGenerator import GeoIPGenerator
 
 
 class TestGeoIPGenerator(unittest.TestCase):
