@@ -2,6 +2,7 @@ import json
 import random
 import os
 import time
+from datetime import timedelta
 
 from kafka import KafkaProducer
 from kafka.admin import KafkaAdminClient, NewTopic
@@ -44,13 +45,34 @@ producer = KafkaProducer(
     value_serializer=lambda v: json.dumps(v).encode('utf-8')
 )
 
+cpt = 0
+start = None
 try:
+    print("Produce Connexion Logs Data...")
+    start = time.time()
     while True:
         producer.send(topic_name, value=connexion_log_gen.generate_log())
+        cpt += 1
 
-        time.sleep(random.randint(10, 60))
+        if cpt % 10 == 0:
+            produce_since = time.time() - start
+            elapsed_timedelta = timedelta(seconds=produce_since)
+            elapsed_str = str(elapsed_timedelta)
+            print(f"Time since started: {elapsed_str}")
+            print("Producer generated:", cpt, "logs")
+            print()
+
+        time.sleep(random.randint(30, 60))
 
 except KeyboardInterrupt:
+    if start is not None:
+        end = time.time() - start
+        elapsed_timedelta = timedelta(seconds=end)
+        elapsed_str = str(elapsed_timedelta)
+        print(f"Time since started: {elapsed_str}")
+        print("Producer generated:", cpt, "logs")
+        print()
+
     print("Stop Kafka Producer...")
 finally:
     producer.close()
