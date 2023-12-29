@@ -7,7 +7,7 @@ from datetime import timedelta
 from kafka import KafkaProducer
 from kafka.admin import KafkaAdminClient, NewTopic
 
-from log_processor_kafka.generator.ConnexionLogGenerator import ConnexionLogGenerator
+from log_generator.connexion_log_generator import ConnexionLogGenerator
 
 ipv4_country_db_file_path = os.path.abspath('./ressources/geolite2-country-ipv4.csv')
 connexion_log_gen = ConnexionLogGenerator(ipv4_country_db_file_path)

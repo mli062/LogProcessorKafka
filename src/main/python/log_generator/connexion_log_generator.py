@@ -2,7 +2,7 @@ import random
 import string
 import datetime
 
-from log_processor_kafka.generator.GeoIPGenerator import GeoIPGenerator
+from .geo_ip_generator import GeoIPGenerator
 
 
 class ConnexionLogGenerator:
