@@ -6,7 +6,7 @@ from src.main.python.log_generator.geo_ip_generator import GeoIPGenerator
 class TestGeoIPGenerator(unittest.TestCase):
 
     def setUp(self):
-        self.ipv4_country_db_file_path = os.path.abspath('./ressources/geolite2-country-ipv4.csv')
+        self.ipv4_country_db_file_path = os.path.abspath('./resources/geolite2-country-ipv4.csv')
         self.geo_ip_generator = GeoIPGenerator(self.ipv4_country_db_file_path)
 
     def test_generate_random_ip(self):

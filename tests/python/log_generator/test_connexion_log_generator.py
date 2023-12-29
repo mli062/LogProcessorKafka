@@ -8,7 +8,7 @@ from src.main.python.log_generator.connexion_log_generator import ConnexionLogGe
 class TestConnexionLogGenerator(unittest.TestCase):
 
     def setUp(self):
-        self.ipv4_country_db_file_path = os.path.abspath('./ressources/geolite2-country-ipv4.csv')
+        self.ipv4_country_db_file_path = os.path.abspath('./resources/geolite2-country-ipv4.csv')
         self.connexion_log_generator = ConnexionLogGenerator(self.ipv4_country_db_file_path)
 
     @patch('src.main.python.log_generator.connexion_log_generator.datetime')

@@ -9,7 +9,7 @@ from kafka.admin import KafkaAdminClient, NewTopic
 
 from log_generator.connexion_log_generator import ConnexionLogGenerator
 
-ipv4_country_db_file_path = os.path.abspath('./ressources/geolite2-country-ipv4.csv')
+ipv4_country_db_file_path = os.path.abspath('./resources/geolite2-country-ipv4.csv')
 connexion_log_gen = ConnexionLogGenerator(ipv4_country_db_file_path)
 
 # Set your Kafka broker address
