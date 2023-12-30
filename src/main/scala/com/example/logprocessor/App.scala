@@ -1,15 +1,18 @@
 package com.example.logprocessor
 
+import org.apache.spark.sql.SparkSession
+
 /**
  *
  */
 object App {
-  
-  def foo(x : Array[String]) = x.foldLeft("")((a,b) => a + b)
-  
+    
   def main(args : Array[String]) {
-    println( "Hello World!" )
-    println("concat arguments = " + foo(args))
+    val spark = SparkSession.builder()
+      .master("local[1]")
+      .appName("Log Processor Kafka")
+      .getOrCreate();
+    println("Spark Version : " + spark.version);
   }
 
 }
