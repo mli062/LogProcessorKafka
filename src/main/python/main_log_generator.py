@@ -7,10 +7,10 @@ from datetime import timedelta
 from kafka import KafkaProducer
 from kafka.admin import KafkaAdminClient, NewTopic
 
-from log_generator.connexion_log_generator import ConnexionLogGenerator
+from log_generator.connection_log_generator import ConnectionLogGenerator
 
-ipv4_country_db_file_path = os.path.abspath('./ressources/geolite2-country-ipv4.csv')
-connexion_log_gen = ConnexionLogGenerator(ipv4_country_db_file_path)
+ipv4_country_db_file_path = os.path.abspath('./resources/geolite2-country-ipv4.csv')
+connexion_log_gen = ConnectionLogGenerator(ipv4_country_db_file_path)
 
 # Set your Kafka broker address
 bootstrap_servers = 'localhost:9092'
