@@ -8,7 +8,9 @@ from src.main.python.log_generator.connection_log_generator import ConnectionLog
 class TestConnectionLogGenerator(unittest.TestCase):
 
     def setUp(self):
-        self.ipv4_country_db_file_path = os.path.abspath('./resources/geolite2-country-ipv4.csv')
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir = os.path.join(script_dir, '..', '..', '..')
+        self.ipv4_country_db_file_path = os.path.join(parent_dir, 'resources', 'geolite2-country-ipv4.csv')
         self.connection_log_generator = ConnectionLogGenerator(self.ipv4_country_db_file_path)
 
     def test_connect_user(self):
@@ -162,8 +164,9 @@ class TestConnectionLogGenerator(unittest.TestCase):
         mock_random.choices.return_value = [True]
 
         log = self.connection_log_generator.generate_log()
-        self.assertIn(log["username"], ["root", "admin", "authorized_user1", "authorized_user2", "authorized_user3"])
-        self.assertTrue(log["auth_success"])
+        self.assertIn("Accepted", log)
+        self.assertIn("session opened for user", log)
+        self.assertIn("New session 1 of user", log)
 
     @patch('src.main.python.log_generator.connection_log_generator.datetime')
     @patch('src.main.python.log_generator.connection_log_generator.random')
@@ -174,9 +177,7 @@ class TestConnectionLogGenerator(unittest.TestCase):
         mock_datetime.datetime.now.return_value = datetime.datetime(2023, 1, 1, 15, 0, 0)
         mock_random.choices.return_value = [False]
         mock_generate_random_username.return_value = "fakeuser"
-        mock_generate_random_password.return_value = "fakepassword"
 
         log = self.connection_log_generator.generate_log()
         mock_generate_random_username.assert_called_with()
-        mock_generate_random_password.assert_called_with()
-        self.assertFalse(log["auth_success"])
+        self.assertIn("Failed password for invalid user fakeuser", log)

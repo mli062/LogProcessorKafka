@@ -1,13 +1,10 @@
 package com.example.logprocessor
 
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions.{asc, col, count, from_json, from_unixtime, when, window}
-import org.apache.spark.sql.types.{BooleanType, IntegerType, LongType, StringType, StructType, TimestampNTZType}
+import org.apache.spark.sql.functions.{asc, col, count, from_unixtime, unix_timestamp, when, window, regexp_extract}
+import org.apache.spark.sql.types.IntegerType
 
 
-/**
- *
- */
 object App {
 
   def main(args : Array[String]): Unit = {
@@ -27,27 +24,26 @@ object App {
     
     val connectionLogStrDF = kafkaConsumer.selectExpr("CAST(value AS STRING)")
 
-    val connectionLogSchema = new StructType()
-      .add(name = "timestamp", dataType = LongType)
-      .add(name = "username", dataType = StringType)
-      .add(name = "ip_address", dataType = StringType)
-      .add(name = "country", dataType = StringType)
-      .add(name = "port", dataType = IntegerType)
-      .add(name = "connection_type", dataType = StringType)
-      .add(name = "auth_success", dataType = BooleanType)
-      .add(name = "password", dataType = StringType)
+    val timestampRegex = """(\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})""".r
+    val usernameRegex = """password for (invalid user\s+)?(\w+) from""".r
+    val ipRegex = """from\s+([\d\.]+)\s+port""".r
+    val portRegex = """port\s+(\d+)""".r
 
-    val connectionLogDF = connectionLogStrDF
-      .select(from_json(col("value"), connectionLogSchema).as("data"))
-      .select("data.*")
-      .withColumn("timestamp", from_unixtime(col("timestamp")))
+    val parsedDF = connectionLogStrDF.select(
+      from_unixtime(unix_timestamp(regexp_extract(col("value"), timestampRegex.toString, 1), "MMM dd HH:mm:ss")).as("timestamp"),
+      regexp_extract(col("value"), usernameRegex.toString(), 2).as("username"),
+      regexp_extract(col("value"), ipRegex.toString(), 1).as("ip"),
+      regexp_extract(col("value"), portRegex.toString(), 1).cast(IntegerType).as("port"),
+      when(col("value").contains("Failed"), false).otherwise(true).as("connection_status"),
+      when(col("value").contains("invalid user"), false).otherwise(true).as("user_existence")
+    )
 
-    val aggregatedDF = connectionLogDF
+    val aggregatedDF = parsedDF
       .groupBy(window(col("timestamp"), "10 minutes").as("Timestamp"))
       .agg(
         count("*").as("total_connections"),
-        count(when(col("auth_success"), 1)).as("successful_connections"),
-        count(when(!col("auth_success"), 1)).as("failed_connections")
+        count(when(col("connection_status"), 1)).as("successful_connections"),
+        count(when(!col("connection_status"), 1)).as("failed_connections")
       )
       .orderBy(asc("Timestamp"))
 
@@ -58,7 +54,6 @@ object App {
       .start()
 
     query.awaitTermination()
-
   }
 
 }
