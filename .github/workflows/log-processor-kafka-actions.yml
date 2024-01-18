@@ -2,7 +2,7 @@ name: log-processor-kafka-actions
 run-name: ${{ github.actor }} executing project Actions.
 on: [push]
 jobs:
-  unit-tests:
+  python-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,3 +16,15 @@ jobs:
           pip install -r requirements.txt
       - name: Execute python tests
         run: python -m unittest discover tests/python/ -p "test_*.py"
+
+  maven-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '1.8'
+      - name: Build and test Scala code
+        run: mvn clean install

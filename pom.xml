@@ -79,6 +79,12 @@
       <version>${spec2.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.holdenkarau</groupId>
+      <artifactId>spark-testing-base_2.13</artifactId>
+      <version>3.5.0_1.4.7</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
