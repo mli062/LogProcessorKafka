@@ -78,6 +78,11 @@ We use GitHub Actions to automate the testing process for both the Python and Sc
    - Sets up Java using the `actions/setup-java` action.
    - Builds and tests the Scala code using `mvn clean install`.
 
+## GeoLite2 Database
+
+The GeoIP data used in this project is sourced from the [ip-location-db](https://github.com/sapics/ip-location-db) repository. 
+The GeoLite2 database provides information about the geographical location (country) of IP addresses.
+
 ## Testing
 The project includes unit tests for both Scala and Python components. To run the tests, use the following commands:
 
