@@ -9,10 +9,9 @@ class ConnectionLogGenerator:
     TRUE_FALSE_CHOICES = [True, False]
 
     def __init__(self, ipv4_country_db_file_path):
-        self.common_usernames = ["user", "admin", "root", "john_doe", "jane_doe", "user123", "admin123"]
-        self.common_passwords = ["password", "admin123", "123456"]
+        self.common_usernames = ["user", "admin", "root", "user123", "admin123"]
+        self.common_passwords = ["admin", "root", "password", "admin123", "123456"]
         self.common_ports = [22, 80, 443, 3306, 5432, 8080]
-        self.common_connection_types = ["ssh", "http", "ftp", "telnet", "rdp"]
         self.geoip_generator = GeoIPGenerator(ipv4_country_db_file_path)
         self.authorized_users = [
             {"username": "root", "password": "securepasswordroot", "ip_address": "185.7.72.105", "port": 22,
@@ -31,6 +30,7 @@ class ConnectionLogGenerator:
              "connection_type": "ssh", "country": "FR", "connection_hours": (17, 22),
              "is_connected": False, "connection_timestamp": None},
         ]
+        self.n_session = 0
 
     @staticmethod
     def connect_user(authorized_users, user, current_timestamp):
@@ -72,41 +72,36 @@ class ConnectionLogGenerator:
                 authorized_user = user
                 break
 
+        random_id = random.randint(1000000, 9999999)
         if (authorized_user is not None and not authorized_user.get("is_connected", True)
                 and random.choices(self.TRUE_FALSE_CHOICES, weights=[0.1, 0.9])[0]):
             user = authorized_user
-            auth_success = True
             self.authorized_users = self.connect_user(self.authorized_users, user, current_timestamp)
+            self.n_session += 1
+            log_messages = [
+                f"{current_time.strftime('%b %d %H:%M:%S')} HOSTNAME sshd[{random_id}]: "
+                f"'Accepted' password for {user['username']} from {user['ip_address']} port {user['port']} ssh2",
+                f"{current_time.strftime('%b %d %H:%M:%S')} HOSTNAME sshd[{random_id}]: "
+                f"pam_unix(sshd:session): session opened for user {user['username']}(uid=0) by (uid=0)",
+                f"{current_time.strftime('%b %d %H:%M:%S')} HOSTNAME systemd-logind[{random_id}]: "
+                f"New session {self.n_session} of user {user['username']}."
+            ]
         else:
             user = self.generate_fake_user()
-            auth_success = False
+            log_messages = [
+                f"{current_time.strftime('%b %d %H:%M:%S')} HOSTNAME sshd[{random_id}]: "
+                f"Failed password for {'invalid user ' + user['username'] if user['username'] not in self.common_usernames else user['username']} "
+                f"from {user['ip_address']} port {user['port']} ssh2"
+            ]
 
-        r_ip_address = user["ip_address"]
-        country = user["country"]
-        port = user["port"]
-        connection_type = user["connection_type"]
-        password = user["password"]
-
-        return {
-            "timestamp": int(current_timestamp.timestamp()),
-            "username": user["username"],
-            "ip_address": r_ip_address,
-            "country": country,
-            "port": port,
-            "connection_type": connection_type,
-            "auth_success": auth_success,
-            "password": password,
-        }
+        return "\n".join(log_messages)
 
     def generate_fake_user(self):
-        r_ip_address, country = self.geoip_generator.generate_random_ip()
+        r_ip_address, _ = self.geoip_generator.generate_random_ip()
         return {
             "username": self.generate_random_username(),
-            "password": self.generate_random_password(),
             "ip_address": r_ip_address,
             "port": self.generate_random_port(),
-            "connection_type": random.choice(self.common_connection_types),
-            "country": country,
         }
 
     def generate_random_port(self):
